@@ -15,7 +15,8 @@ module SoftLayer
       end
 
       def search(options)
-        container.search(:path => path, options)
+        options[:path] = path
+        container.search(options)
       end
 
     end
