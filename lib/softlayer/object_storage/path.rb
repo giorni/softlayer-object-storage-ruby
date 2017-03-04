@@ -2,7 +2,7 @@
 module SoftLayer
   module ObjectStorage
     class Path
-    
+
       attr_reader :container
       attr_reader :path
       def initialize(container, path = '')

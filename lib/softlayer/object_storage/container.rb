@@ -19,7 +19,7 @@ module SoftLayer
         # not exist.
         self.container_metadata
       end
-      
+
       # Refreshes data about the container and populates class variables. Items are otherwise
       # loaded in a lazy loaded fashion.
       #
@@ -55,7 +55,7 @@ module SoftLayer
           response.to_hash.select { |k,v| k.match(/^x-cdn/i) }
         )
       end
-      
+
       # Returns the container's metadata as a nicely formatted hash, stripping off the X-Meta-Object- prefix that the system prepends to the
       # key name.
       #
@@ -68,7 +68,7 @@ module SoftLayer
       end
 
       # Sets the metadata for an object.  By passing a hash as an argument, you can set the metadata for an object.
-      # New calls to set metadata are additive.  To remove metadata, set the value of the key to nil.  
+      # New calls to set metadata are additive.  To remove metadata, set the value of the key to nil.
       #
       # Throws NoSuchObjectException if the container doesn't exist.  Throws InvalidResponseException if the request
       # fails.
@@ -84,7 +84,7 @@ module SoftLayer
           raise SoftLayer::ObjectStorage::Exception::InvalidResponse, "Invalid response code #{e.status}" unless (e.status.to_s =~ /^20/)
         end
       end
-      
+
       # Size of the container (in bytes)
       def bytes
         self.container_metadata[:bytes]
@@ -236,7 +236,7 @@ module SoftLayer
             query << "#{param}=#{SoftLayer::ObjectStorage.escape(value.to_s)}"
           end
         end
-        begin 
+        begin
           response = SoftLayer::Swift::Client.get_container(self.connection.storageurl, self.connection.authtoken, escaped_name, params[:marker], params[:limit], params[:prefix], params[:delimiter])
           return Hash[*response[1].collect{|o| [o['name'],{ :bytes => o["bytes"], :hash => o["hash"], :content_type => o["content_type"], :last_modified => DateTime.parse(o["last_modified"])}] }.flatten]
         rescue SoftLayer::Swift::ClientException => e
@@ -308,7 +308,7 @@ module SoftLayer
         rescue SoftLayer::Swift::ClientException => e
           raise SoftLayer::ObjectStorage::Exception::NoSuchContainer, "Container #{@name} does not exist" unless (e.status.to_s == "201" || e.status.to_s == "202")
         end
-        headers = { 
+        headers = {
           "X-Context" => "cdn",
           "X-Cdn-Ttl" => ttl.to_s
         }
@@ -325,7 +325,7 @@ module SoftLayer
         rescue SoftLayer::Swift::ClientException => e
           raise SoftLayer::ObjectStorage::Exception::NoSuchContainer, "Container #{@name} does not exist" unless (e.status.to_s == "201" || e.status.to_s == "202")
         end
-        headers = { 
+        headers = {
           "X-Context" => "cdn",
           "X-Container-Read" => ".r:*",
           "X-Cdn-Ttl" => ttl.to_s
@@ -360,7 +360,7 @@ module SoftLayer
           raise SoftLayer::ObjectStorage::Exception::NoSuchContainer, "Container #{@name} does not exist (response code: #{e.status.to_s})" unless (e.status.to_s =~ /^20/)
         end
       end
-     
+
       # Makes a container private and returns true upon success.  Throws NoSuchContainerException
       # if the container doesn't exist or if the request fails.
       #
@@ -370,25 +370,25 @@ module SoftLayer
       #   => true
       def make_private
         raise Exception::CDNNotAvailable unless cdn_available?
-        headers = { 
+        headers = {
           "X-Context" => "cdn",
           "X-Container-Read" => " "
         }
-          SoftLayer::Swift::Client.post_container(self.connection.storageurl, self.connection.authtoken, escaped_name, headers)
-          refresh
-          true
+        SoftLayer::Swift::Client.post_container(self.connection.storageurl, self.connection.authtoken, escaped_name, headers)
+        refresh
+        true
       end
 
       # Purges CDN Edge Cache for all objects inside of this container
       #
-      # :email, An valid email address or comma seperated 
+      # :email, An valid email address or comma seperated
       #  list of emails to be notified once purge is complete .
       #
       #   container.purge_from_cdn
       #   => true
       #
-      #  or 
-      #   
+      #  or
+      #
       #   container.purge_from_cdn("User@domain.com")
       #   => true
       #
@@ -415,7 +415,7 @@ module SoftLayer
       def cdn_available?
         true
       end
-      
+
       def escaped_name
         SoftLayer::ObjectStorage.escape(@name)
       end

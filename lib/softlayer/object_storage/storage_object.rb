@@ -5,7 +5,7 @@ module SoftLayer
 
       # Name of the object corresponding to the instantiated object
       attr_reader :name
-      
+
       # The parent SoftLayer::ObjectStorage::Container object
       attr_reader :container
 
@@ -36,24 +36,24 @@ module SoftLayer
         @object_metadata ||= (
           begin
             response = SoftLayer::Swift::Client.head_object(self.container.connection.storageurl, self.container.connection.authtoken, self.container.escaped_name, escaped_name)
-          rescue SoftLayer::Swift::ClientException => e
-            raise SoftLayer::ObjectStorage::Exception::NoSuchObject, "Object #{@name} does not exist" unless (e.status.to_s =~ /^20/)
-          end
-          resphash = {}
-          metas = response.to_hash.select { |k,v| k.match(/^x-object-meta/) }
+        rescue SoftLayer::Swift::ClientException => e
+          raise SoftLayer::ObjectStorage::Exception::NoSuchObject, "Object #{@name} does not exist" unless (e.status.to_s =~ /^20/)
+        end
+        resphash = {}
+        metas = response.to_hash.select { |k,v| k.match(/^x-object-meta/) }
 
-          metas.each do |x,y|
-            resphash[x] = (y.respond_to?(:join) ? y.join('') : y.to_s)
-          end
+        metas.each do |x,y|
+          resphash[x] = (y.respond_to?(:join) ? y.join('') : y.to_s)
+        end
 
-          {
-            :manifest => response["x-object-manifest"],
-            :bytes => response["content-length"],
-            :last_modified => Time.parse(response["last-modified"]),
-            :etag => response["etag"],
-            :content_type => response["content-type"],
-            :metadata => resphash
-          }
+        {
+          :manifest => response["x-object-manifest"],
+          :bytes => response["content-length"],
+          :last_modified => Time.parse(response["last-modified"]),
+          :etag => response["etag"],
+          :content_type => response["content-type"],
+          :metadata => resphash
+        }
         )
       end
 
@@ -93,7 +93,7 @@ module SoftLayer
       def content_type=(type)
         self.copy(:headers => {'Content-Type' => type})
       end
-   
+
       # Retrieves the data from an object and stores the data in memory.  The data is returned as a string.
       # Throws a NoSuchObjectException if the object doesn't exist.
       #
@@ -187,11 +187,11 @@ module SoftLayer
           "X-Context" => "cdn",
           "X-Cdn-Purge" => "true"
         }
-          SoftLayer::Swift::Client.post_object(self.container.connection.storageurl, self.container.connection.authtoken, self.container.escaped_name, escaped_name, headers)
-          true
+        SoftLayer::Swift::Client.post_object(self.container.connection.storageurl, self.container.connection.authtoken, self.container.escaped_name, escaped_name, headers)
+        true
       end
 
-      
+
 
       # Returns the object's manifest.
       #
@@ -265,20 +265,20 @@ module SoftLayer
         true
       end
       # Purges CDN Edge Cache for all objects inside of this container
-      # 
-      # :email, An valid email address or comma seperated 
+      #
+      # :email, An valid email address or comma seperated
       # list of emails to be notified once purge is complete .
       #
       #    obj.purge_from_cdn
       #    => true
       #
-      #  or 
-      #                                     
+      #  or
+      #
       #   obj.purge_from_cdn("User@domain.com")
       #   => true
-      #                                                
+      #
       #  or
-      #                                                         
+      #
       #   obj.purge_from_cdn("User@domain.com, User2@domain.com")
       #   => true
       def purge_from_cdn(email=nil)
@@ -315,9 +315,9 @@ module SoftLayer
       def load_from_filename(filename, headers = {}, check_md5 = false)
         f = open(filename)
         if check_md5
-            require 'digest/md5'
-            md5_hash = Digest::MD5.file(filename)
-            headers["Etag"] = md5_hash.to_s()
+          require 'digest/md5'
+          md5_hash = Digest::MD5.file(filename)
+          headers["Etag"] = md5_hash.to_s()
         end
         self.write(f, headers)
         f.close
@@ -355,10 +355,10 @@ module SoftLayer
           container.cdn_urls.map {|k,v| v += "/#{escaped_name}"}
         )
       end
-      
+
       # Copy this object to a new location (optionally in a new container)
       #
-      # You must supply either a name for the new object or a container name, or both. If a :name is supplied without a :container, 
+      # You must supply either a name for the new object or a container name, or both. If a :name is supplied without a :container,
       # the object is copied within the current container. If the :container is specified with no :name, then the object is copied
       # to the new container with its current name.
       #
@@ -388,7 +388,7 @@ module SoftLayer
           raise SoftLayer::ObjectStorage::Exception::InvalidResponse, "Invalid response code #{response.code}" unless (response.code =~ /^20/)
         end
       end
-      
+
       # Takes the same options as the copy method, only it does a copy followed by a delete on the original object.
       #
       # Returns the new SoftLayer::ObjectStorage::StorageObject for the moved item. You should not attempt to use the old object after doing
@@ -399,7 +399,7 @@ module SoftLayer
         self.freeze
         return new_object
       end
-        
+
       def to_s # :nodoc:
         @name
       end
@@ -410,17 +410,17 @@ module SoftLayer
 
       private
 
-        def make_path(path) # :nodoc:
-          if path == "." || path == "/"
-            return
-          else
-            unless self.container.object_exists?(path)
-              o = self.container.create_object(path)
-              o.write(nil, {'Content-Type' => 'application/directory'})
-            end
-            make_path(File.dirname(path))
+      def make_path(path) # :nodoc:
+        if path == "." || path == "/"
+          return
+        else
+          unless self.container.object_exists?(path)
+            o = self.container.create_object(path)
+            o.write(nil, {'Content-Type' => 'application/directory'})
           end
+          make_path(File.dirname(path))
         end
+      end
 
     end
 

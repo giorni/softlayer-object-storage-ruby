@@ -19,7 +19,7 @@ module SoftLayer
         @reason  = params[:http_reason]
         @device  = params[:http_device]
       end
-          
+
       def to_s
         a = @msg
         b = ''
@@ -40,7 +40,7 @@ module SoftLayer
         @size = chunk_size
         @file = data
       end
-      
+
       def read(foo)
         @file.read(@size)
       end
@@ -105,13 +105,13 @@ module SoftLayer
         @snet = snet
         @starting_backoff = starting_backoff
       end
-      
-    private
+
+      private
       def _retry(reset, func, args=nil)
         @attempts = 0
         backoff = @starting_backoff
-        
-        while @attempts < @retries 
+
+        while @attempts < @retries
           @attempts += 1
           begin
             if !@url or !@token
@@ -150,10 +150,10 @@ module SoftLayer
         end
       end
 
-    public
+      public
       def self.http_connection(url, proxy_host=nil, proxy_port=nil)
         parsed = URI::parse(url)
-        
+
         if parsed.scheme == 'http'
           require 'net/http'
           conn = Net::HTTP::Proxy(proxy_host, proxy_port).new(parsed.host, parsed.port)
@@ -169,7 +169,7 @@ module SoftLayer
             "Cannot handle protocol scheme #{parsed.scheme} for #{url} %s")
         end
       end
-      
+
       def http_connection
         if !@http_conn
           @http_conn = Client.http_connection(@url)
@@ -177,16 +177,16 @@ module SoftLayer
           @http_conn
         end
       end
-      
+
       def self.get_auth(url, user, key, snet=false)
         parsed, conn = http_connection(url)
         conn.start if not conn.started?
         resp = conn.get(URI.encode(parsed.request_uri), {"x-auth-user" => user, "x-auth-key" => key })
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Account GET failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         url = URI::parse(resp.header['x-storage-url'])
         if snet
@@ -194,13 +194,13 @@ module SoftLayer
         end
         [url.to_s, resp.header['x-auth-token'], resp.header]
       end
-      
+
       def get_auth
         @url, @token = Client.get_auth(@authurl, @user, @key, @snet)
       end
-      
-      def self.get_account(url, token, marker=nil, limit=nil, prefix=nil, 
-          http_conn=nil, full_listing=false, cdn_only = false)
+
+      def self.get_account(url, token, marker=nil, limit=nil, prefix=nil,
+                           http_conn=nil, full_listing=false, cdn_only = false)
         #todo: add in rest of functionality
         if not http_conn
           http_conn = http_connection(url)
@@ -231,9 +231,9 @@ module SoftLayer
         resp = conn.get(parsed.request_uri, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Account GET failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -245,11 +245,11 @@ module SoftLayer
           [resp_headers, JSON.parse(resp.body)]
         end
       end
-      
+
       def get_account(marker=nil, limit=nil, prefix=nil, full_listing=false)
         _retry(nil, :get_account, [marker, limit, prefix, @http_conn, full_listing])
       end
-          
+
       def self.head_account(url, token, http_conn=nil)
         if not http_conn
           http_conn = http_connection(url)
@@ -260,9 +260,9 @@ module SoftLayer
         resp = conn.head(parsed.request_uri, {'x-auth-token' => token})
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Account HEAD failed', :http_scheme=>parsed.scheme,
-                  :http_host=>conn.address, :http_port=>conn.port,
-                  :http_path=>parsed.path, :http_status=>resp.code,
-                  :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -270,7 +270,7 @@ module SoftLayer
         end
         resp_headers
       end
-      
+
       def head_account
         _retry(nil, :head_account, [@http_conn])
       end
@@ -286,9 +286,9 @@ module SoftLayer
         resp = conn.post(parsed.request_uri, nil, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Account POST failed', :http_scheme=>parsed.scheme,
-                  :http_host=>conn.address, :http_port=>conn.port,
-                  :http_path=>parsed.path, :http_status=>resp.code,
-                  :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp.body
       end
@@ -296,15 +296,15 @@ module SoftLayer
         _retry(nil, :post_account, [headers, @http_conn])
       end
 
-      def self.get_container(url, token, container, marker=nil, limit=nil, 
-            prefix=nil, delimiter=nil, http_conn=nil, full_listing=nil)
+      def self.get_container(url, token, container, marker=nil, limit=nil,
+                             prefix=nil, delimiter=nil, http_conn=nil, full_listing=nil)
         #todo: add in rest of functionality
         if not http_conn
           http_conn = http_connection(url)
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         if full_listing
           rv = get_account(url, token, marker, limit, prefix, http_conn)
           listing = rv[1]
@@ -328,9 +328,9 @@ module SoftLayer
         resp = conn.get(parsed.request_uri, {'x-auth-token' => token})
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Container GET failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_query=>parsed.query, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -342,7 +342,7 @@ module SoftLayer
           [resp_headers, JSON.parse(resp.body())]
         end
       end
-      
+
       def get_container(container, marker=nil, limit=nil, prefix=nil, delimiter=nil, full_listing=nil)
         _retry(nil, :get_container, [container, marker, limit, prefix, delimiter, full_listing])
       end
@@ -353,7 +353,7 @@ module SoftLayer
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         conn.start if !conn.started?
         parsed.path += "/#{container}"
         headers = {'x-auth-token' => token}
@@ -361,9 +361,9 @@ module SoftLayer
         resp = conn.head(parsed.request_uri, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Container HEAD failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message + headers.inspect)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message + headers.inspect)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -371,7 +371,7 @@ module SoftLayer
         end
         resp_headers
       end
-      
+
       def head_container(container)
         _retry(nil, :head_container, [container, @http_conn])
       end
@@ -382,7 +382,7 @@ module SoftLayer
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         conn.start if !conn.started?
         parsed.path += "/#{container}"
         headers['x-auth-token'] = token
@@ -390,12 +390,12 @@ module SoftLayer
         resp = conn.put(parsed.request_uri, nil, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Container PUT failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)  
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
       end
-      
+
       def put_container(container, headers={})
         _retry(nil, :put_container, [container, headers, @http_conn])
       end
@@ -406,19 +406,19 @@ module SoftLayer
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         conn.start if !conn.started?
         parsed.path += "/#{container}"
         headers['x-auth-token'] = token
         resp = conn.post(parsed.request_uri, nil, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Container POST failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message + "\n#{headers.inspect}")
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message + "\n#{headers.inspect}")
         end
       end
-      
+
       def post_container(container, headers={})
         _retry(nil, :post_container, [container, headers])
       end
@@ -429,7 +429,7 @@ module SoftLayer
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         conn.start if !conn.started?
         parsed.path += "/#{container}"
         headers['x-auth-token'] = token
@@ -437,12 +437,12 @@ module SoftLayer
         resp = conn.delete(parsed.request_uri, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Container DELETE failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
       end
-      
+
       def delete_container(container)
         _retry(nil, :delete_container, [container])
       end
@@ -453,7 +453,7 @@ module SoftLayer
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
 
         parsed.path += "/#{container}/#{name}"
         conn.start if not conn.started?
@@ -467,13 +467,13 @@ module SoftLayer
           object_body = nil
         else
           resp = conn.request_get(parsed.request_uri, headers)
-          object_body = resp.body  
+          object_body = resp.body
         end
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Object GET failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -485,23 +485,23 @@ module SoftLayer
       def get_object(container, name, resp_chunk_size=nil)
         _retry(nil, :get_object, [container, name, resp_chunk_size])
       end
-        
+
       def self.head_object(url, token, container, name, http_conn=nil)
         if not http_conn
           http_conn = http_connection(url)
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
 
         parsed.path += "/#{container}/#{name}"
         conn.start if not conn.started?
         resp = conn.head(parsed.request_uri, {'x-auth-token' => token})
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Object HEAD failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp_headers = {}
         resp.header.each do |k,v|
@@ -509,21 +509,21 @@ module SoftLayer
         end
         resp_headers
       end
-      
+
       def head_object(container, name)
         _retry(nil, :head_object, [container, name])
       end
 
       def self.put_object(url, token=nil, container=nil, name=nil, contents=nil,
-                     content_length=nil, etag=nil, chunk_size=nil,
-                     content_type=nil, headers={}, http_conn=nil, proxy=nil)
+                          content_length=nil, etag=nil, chunk_size=nil,
+                          content_type=nil, headers={}, http_conn=nil, proxy=nil)
         chunk_size ||= 65536
         if not http_conn
           http_conn = http_connection(url)
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-                      
+
         parsed.path += "/#{container}" if container
         parsed.path += "/#{name}" if name
         headers['x-auth-token'] = token if token
@@ -538,7 +538,7 @@ module SoftLayer
           end
         end
         headers['content-type'] = content_type if content_type
-        headers['content-length'] = '0' if not contents  
+        headers['content-length'] = '0' if not contents
         if contents.respond_to? :read
           request = Net::HTTP::Put.new(parsed.request_uri, headers)
           chunked = ChunkedConnectionWrapper.new(contents, chunk_size)
@@ -556,15 +556,15 @@ module SoftLayer
         end
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Object PUT failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         resp.header['etag']
       end
-      
+
       def put_object(container, obj, contents, content_length=nil, etag=nil, chunk_size=65536, content_type=nil, headers={})
-        
+
         _default_reset = Proc.new do |args|
           raise ClientException("put_object(#{container}, #{obj}, ...) failure and no ability to reset contents for reupload.")
         end
@@ -577,37 +577,37 @@ module SoftLayer
         end
         _retry(reset_func, :put_object, [container, obj, contents, content_length, etag, chunk_size, content_type, headers])
       end
-                     
+
       def self.post_object(url, token=nil, container=nil, name=nil, headers={}, http_conn=nil)
         if not http_conn
-           http_conn = http_connection(url)
+          http_conn = http_connection(url)
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         parsed.path += "/#{container}" if container
         parsed.path += "/#{name}" if name
         headers['x-auth-token'] = token if token
         resp = conn.post(parsed.request_uri, nil, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Object POST failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
       end
-      
+
       def post_object(container, name, headers={})
         _retry(nil, :post_object, [container, name, headers])
       end
-      
+
       def self.delete_object(url, token=nil, container=nil, name=nil, http_conn=nil, headers={}, proxy=nil)
         if not http_conn
           http_conn = http_connection(url)
         end
         parsed = http_conn[0].clone
         conn = http_conn[1]
-        
+
         conn.start if !conn.started?
         parsed.path += "/#{container}" if container
         parsed.path += "/#{name}" if name
@@ -615,12 +615,12 @@ module SoftLayer
         resp = conn.delete(parsed.request_uri, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('Object DELETE failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
       end
-      
+
       def delete_object(container, name, headers={})
         _retry(nil, :delete_object, [container, name, headers])
       end
@@ -640,9 +640,9 @@ module SoftLayer
         resp = conn.get(parsed.request_uri, headers)
         if resp.code.to_i < 200 or resp.code.to_i > 300
           raise ClientException.new('search failed', :http_scheme=>parsed.scheme,
-                      :http_host=>conn.address, :http_port=>conn.port,
-                      :http_path=>parsed.path, :http_status=>resp.code,
-                      :http_reason=>resp.message)
+                                    :http_host=>conn.address, :http_port=>conn.port,
+                                    :http_path=>parsed.path, :http_status=>resp.code,
+                                    :http_reason=>resp.message)
         end
         response = {
           :count => resp.header["X-Search-Items-Count"].to_i,

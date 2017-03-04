@@ -60,7 +60,7 @@ module SoftLayer
 
         @authuser = options[:username] ||( raise SoftLayer::ObjectStorage::Exception::Authentication, "Must supply a :username")
         @authkey = options[:api_key] || (raise SoftLayer::ObjectStorage::Exception::Authentication, "Must supply an :api_key")
-        @auth_url = SoftLayer::ObjectStorage::ENDPOINTS[datacenter][network][protocol]  
+        @auth_url = SoftLayer::ObjectStorage::ENDPOINTS[datacenter][network][protocol]
         @retry_auth = options[:retry_auth] || true
         @proxy_host = options[:proxy_host]
         @proxy_port = options[:proxy_port]
@@ -80,7 +80,7 @@ module SoftLayer
 
 
       def search(options = {})
-          response = SoftLayer::Swift::Client.search(storageurl, options, self.authtoken )
+        response = SoftLayer::Swift::Client.search(storageurl, options, self.authtoken )
       end
 
       def get_info
@@ -94,11 +94,11 @@ module SoftLayer
           raise SoftLayer::ObjectStorage::Exception::InvalidResponse, "Unable to obtain account size" unless (e.status.to_s == "204")
         end
       end
-      
+
       def bytes
         get_info[:bytes]
       end
-      
+
       def count
         get_info[:count]
       end
@@ -135,8 +135,8 @@ module SoftLayer
       def create_container(containername)
         raise SoftLayer::ObjectStorage::Exception::Syntax, "Container name cannot contain '/'" if containername.match("/")
         raise SoftLayer::ObjectStorage::Exception::Syntax, "Container name is limited to 256 characters" if containername.length > 256
-          SoftLayer::Swift::Client.put_container(storageurl, self.authtoken, SoftLayer::ObjectStorage.escape(containername))
-          SoftLayer::ObjectStorage::Container.new(self, containername)
+        SoftLayer::Swift::Client.put_container(storageurl, self.authtoken, SoftLayer::ObjectStorage.escape(containername))
+        SoftLayer::ObjectStorage::Container.new(self, containername)
       end
 
       def delete_container(containername, recursive = false)
@@ -157,7 +157,7 @@ module SoftLayer
           raise SoftLayer::ObjectStorage::Exception::InvalidResponse, "Invalid response code #{e.status.to_s}" unless (e.status.to_s == "200")
         end
       end
-      
+
       def storageurl
         "#{self.storagescheme}://#{self.storagehost}:#{self.storageport.to_s}#{self.storagepath}"
       end
