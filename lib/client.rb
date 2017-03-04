@@ -41,8 +41,8 @@ module SoftLayer
         @file = data
       end
 
-      def read(foo)
-        @file.read(@size)
+      def read(len=@size, outbuf)
+        @file.read(len, outbuf)
       end
 
       def eof!
